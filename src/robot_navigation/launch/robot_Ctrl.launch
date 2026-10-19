@@ -1,0 +1,18 @@
+<!-- -->
+<launch>
+
+  <arg name="starAX" default="-2.01553" />
+  <arg name="starAY" default="1.19974" />
+  <arg name="endBX" default="7.9137"/>
+  <arg name="endBY" default="1.40974" />
+  <arg name="spleed" default="0.2" />
+
+  <node pkg="robot_navigation" type="AckermannVehicleNavigation" name="AckermannVehicleNavigation" output="screen" respawn="true" respawn_delay="15">
+    <param name="starAX" value="$(arg starAX)" />
+    <param name="starAY" value="$(arg starAY)" />
+    <param name="endBX" value="$(arg endBX)" />
+    <param name="endBY" value="$(arg endBY)" />
+    <param name="spleed" value="$(arg spleed)" />
+  </node>
+
+</launch>

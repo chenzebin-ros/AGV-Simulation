@@ -1,0 +1,7 @@
+<launch>
+    <node name="ackermann_navigation_node" pkg="robot_navigation" type="AckermannVehicleNavigation" output="log" respawn="true">
+        <remap from="log" to="screen"/>  <!-- 将所有日志输出到屏幕 -->
+        <param name="log_level" type="string" value="info"/>  <!-- 设置日志级别为 info，显示 INFO 和 WARN -->
+		<param name="log_file" type="string" value="/dev/null"/> 
+    </node>
+</launch>

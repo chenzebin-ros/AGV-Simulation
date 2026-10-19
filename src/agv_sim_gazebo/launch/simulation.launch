@@ -1,0 +1,31 @@
+<launch>
+    <!-- 1. 启动 Gazebo 物理环境 (关闭仿真时间，防止节点假死) -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="use_sim_time" value="false"/>
+    </include>
+
+    <!-- 2. 将 URDF 加载到参数服务器 -->
+    <param name="robot_description" command="$(find xacro)/xacro $(find agv_sim_gazebo)/urdf/agv.xacro" />
+
+    <!-- 3. 在 Gazebo 中生成模型 -->
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" 
+          args="-param robot_description -urdf -model agv_robot -x 0 -y 0 -z 0.1" />
+
+    <!-- 4. 发布 TF 和关节状态 -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+    <!-- 5. 启动你的原版 NDT 定位 (目前雷达没数据，靠我们写假定位脚本替代) -->
+    <!-- 暂时注释掉，防止它报错刷屏，或者留着等以后修好雷达再用 -->
+    <!-- <include file="$(find lidar_localizer)/launch/ndt_matching.launch" /> -->
+
+    <!-- 6. 启动你的原版导航控制 -->
+    <include file="$(find robot_navigation)/launch/robot_Ctrl.launch" />
+
+    <!-- 7. 桥梁：把原车算法的 /navigdata 转成 Gazebo 的 /cmd_vel -->
+    <node pkg="agv_sim_gazebo" type="nav_to_gazebo.py" name="nav_to_gazebo" output="screen" />
+
+    <!-- 8. 模拟假反馈信号 -->
+    <node pkg="rostopic" type="rostopic" name="fake_battery" args="pub /Battery std_msgs/UInt8 '{data: 85}' -r 1" />
+    <node pkg="rostopic" type="rostopic" name="fake_io" args="pub /DataIN std_msgs/UInt16 '{data: 0}' -r 10" /> 
+</launch>

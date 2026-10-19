@@ -1,0 +1,32 @@
+<launch>
+
+
+  <arg name="x" default="0.813"/>
+  <arg name="y" default="0.020"/>
+  <arg name="z" default="0.0"/>
+  <arg name="yaw" default="1.654"/>
+  <arg name="pitch" default="0.0"/>
+  <arg name="roll" default="0.0"/>
+  <arg name="frame_id" default="base_link"/>
+  <arg name="child_frame_id" default="velodyne"/>
+  <arg name="period_in_ms" default="10"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_localizer" args="$(arg x) $(arg y) $(arg z) $(arg yaw) $(arg pitch) $(arg roll) $(arg frame_id) $(arg child_frame_id) $(arg period_in_ms)"/>
+
+  <node pkg="tf"  type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 /world /map 10" />
+<!-- mapからmobilityへのtf -->
+  <node pkg="tf"  type="static_transform_publisher" name="map_to_mobility" args="0 0 0 0 0 0 /map /mobility 10" />
+
+  <arg name="scene_num" default="noupdate" />
+  <arg name="path_area_list" default="None" />
+  <arg name="path_pcd" default="/home/czb/AT_HeavyLoadAGV_WS/src/map_file/map/hex01.pcd" />
+
+  <node pkg="map_file" type="points_map_loader" name="points_map_loader" output="screen">
+  <rosparam subst_value="true">
+    area: $(arg scene_num)
+    arealist_path: $(arg path_area_list)
+    pcd_paths: [ $(arg path_pcd) ]
+  </rosparam>
+</node>
+
+</launch>

@@ -1,0 +1,35 @@
+<!-- -->
+<launch>
+
+  <arg name="method_type" default="0 " /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+  <arg name="use_odom" default="false" />
+  <arg name="use_imu" default="false" />
+  <arg name="imu_upside_down" default="false" />
+  <arg name="imu_topic" default="/imu_raw" />
+  <arg name="incremental_voxel_update" default="false" />
+  <arg name="tf_x" default="0.0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+  <arg name="tf_y" default="0.0" />
+  <arg name="tf_z" default="0.0" />
+  <arg name="tf_roll" default="0.0" />
+  <arg name="tf_pitch" default="0.0" />
+  <arg name="tf_yaw" default="0.0" />
+
+  <!--<node pkg="tf"  type="static_transform_publisher" name="base_link_to_velodyne" args="0 0 0 0 0 0 /base_link /velodyne 10" />
+   rosrun lidar_localizer ndt_mapping  -->
+  <node pkg="lidar_localizer" type="queue_counter" name="queue_counter" output="screen"/>
+  <node pkg="lidar_localizer" type="ndt_mapping" name="ndt_mapping" output="screen">
+    <param name="method_type" value="$(arg method_type)" />
+    <param name="use_imu" value="$(arg use_imu)" />
+    <param name="use_odom" value="$(arg use_odom)" />
+    <param name="imu_upside_down" value="$(arg imu_upside_down)" />
+    <param name="imu_topic" value="$(arg imu_topic)" />
+    <param name="incremental_voxel_update" value="$(arg incremental_voxel_update)" />
+    <param name="tf_x" type = "double" value="$(arg tf_x)" />
+    <param name="tf_y" type = "double" value="$(arg tf_y)" />
+    <param name="tf_z" type = "double" value="$(arg tf_z)" />
+    <param name="tf_roll" type = "double" value="$(arg tf_roll)" />
+    <param name="tf_pitch" type = "double" value="$(arg tf_pitch)" />
+    <param name="tf_yaw" type = "double" value="$(arg tf_yaw)" />
+  </node>
+
+</launch>
