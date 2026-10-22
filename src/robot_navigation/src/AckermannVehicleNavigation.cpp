@@ -552,7 +552,7 @@ double secs11 =0, secs22 = 0;
 int cunntt =0;
 float spleedtak = 0,spleedcoef=1;
 double locX=0,locY=0;
-
+uint8_t sstop = 0;
 double laslocX=0,laslocY=0;
 uint8_t initflg = 0;
 uint8_t loc_statu = 0;
@@ -601,8 +601,12 @@ void outputdata(const geometry_msgs::PoseStamped::ConstPtr& laserOdometry)
     }
     if (ObsSignal.bit.DI3 == 1)
     {
-        spleedcoef = 1;
-        loc_statu = 0;
+        // 只要没有触发避障急停，才允许解除速度限制
+        if (ObsSignal.bit.DI11 == 0 && ObsSignal.bit.DI14 == 0 && sstop == 0)
+        {
+            spleedcoef = 1;
+            loc_statu = 0;
+        }
     }
      std_msgs::UInt8 loc_st;
      loc_st.data = loc_statu;//填充IO out数据
@@ -1095,7 +1099,7 @@ void carrun_safeHandler(const std_msgs::UInt8 &paraMsg)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
-uint8_t sstop = 0;
+//
 void SafetylevelHandler(const std_msgs::UInt8 &paraMsg)
 {
      sstop = paraMsg.data;
@@ -1123,7 +1127,10 @@ void DataINHandler(const std_msgs::UInt16 &paraMsg)
     if ( delayflg > 150 )
     {
         delayflg = 150;
-        spleedcoef = 1;
+        if (ObsSignal.bit.DI11 == 0 && ObsSignal.bit.DI14 == 0 && sstop == 0 && DIN4rst == 1)
+        {
+            spleedcoef = 1;
+        }
     }
     
     if ( ObsSignal.bit.DI9 == 1 || ObsSignal.bit.DI12 == 1 )

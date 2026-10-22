@@ -1,0 +1,87 @@
+#双雷达的坐标系变换
+transformation:
+  rot_sina1:  -0.809
+  rot_cosa1:  0.588
+  tran_x1: -0.45
+  tran_y1: 0.63
+  rot_sina2:  0.707
+  rot_cosa2:  -0.707
+  tran_x2: 0.35
+  tran_y2: -0.63
+
+#安全区域边界 车辆物理尺寸
+car_size:
+  car_length : 3.71
+  car_width : 1.70
+  car_clearance : 0.1
+
+#安全区域边界
+high_safe_area:
+  point_quantity : 5
+  max_y : 1.5
+  min_y : -1.5
+  max_z:  2.0
+  min_z : -1.0
+  front1_x :  0.1
+  front2_x :  1.5   # 改成 1.5 米就报警
+  front3_x :  1.0
+  front4_x :  3.0
+  after1_x  : -0.1
+  after2_x  : -1.5
+  after3_x  : -1.0
+  after4_x  : -3.0
+
+med_safe_area:
+  point_quantity : 20
+  max_y : 0.3
+  min_y :  -0.3
+  max_z:  1
+  min_z :  -0.4
+  front1_x :  0.1
+  front2_x :  2.1
+  front3_x :  1.1
+  front4_x :   3.1
+  after1_x  :  -0.1
+  after2_x  :  -2.1
+  after3_x  :  -1.1
+  after4_x  :  -3.1
+
+low_safe_area:
+  point_quantity : 20
+  max_y : 0.0
+  min_y :  -0.0
+  max_z:  1
+  min_z :  -0.4
+  front1_x :  0.1
+  front2_x :  0.3
+  front3_x :  0.2
+  front4_x :   0.5
+  after1_x  :  -0.1
+  after2_x  :  -0.3
+  after3_x  :  -0.2
+  after4_x  :  -0.5
+
+dock_safe_area:
+  point_quantity : 40
+  max_y : 1
+  min_y :  -1
+  max_z:  1
+  min_z :  -0.2
+  front1_x :  0.2
+  front2_x :  2.7
+  front3_x :  1.7
+  front4_x :   5
+  after1_x  :  -0.2
+  after2_x  :  -2.7
+  after3_x  :  -1.7
+  after4_x  :  -5
+
+
+com_safe_area:
+  point_quantity : 25
+  max_y : 2
+  front1_x :  2
+  front2_x :  2
+  after_x  :  -2
+  after_z  :  -0.3
+ 

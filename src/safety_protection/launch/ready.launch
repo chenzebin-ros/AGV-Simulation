@@ -1,0 +1,6 @@
+<launch>
+　
+
+  <node pkg="safety_protection" type="obstacle_handle" name="obstacle_handle" respawn="true"     output="screen" ></node>
+             <rosparam file="$(find safety_protection)/config/para_con.yaml"/>
+</launch>

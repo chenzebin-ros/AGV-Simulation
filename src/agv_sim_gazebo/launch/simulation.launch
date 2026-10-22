@@ -1,27 +1,35 @@
 <launch>
-    <!-- 1. 启动 Gazebo -->
+    <!-- 1. Gazebo 物理环境 -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="use_sim_time" value="false"/>
     </include>
 
-    <!-- 2. 生成模型 -->
+    <!-- 2. 生成双雷达车模型 -->
     <param name="robot_description" command="$(find xacro)/xacro $(find agv_sim_gazebo)/urdf/agv.xacro" />
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model agv_robot -x 8 -y 0 -z 0.1 -Y 1.5708" />
 
-    <!-- 3. TF 广播 -->
+    <!-- 3. 发布 TF 和关节状态 -->
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
-    <!-- 4. 🎯 仿真专用定位器 (使用底盘真实里程计替代 NDT) -->
+    <!-- 4. 双雷达融合节点 -->
+    <node name="dual_lidar_fusion" pkg="agv_sim_gazebo" type="dual_lidar_fusion.py" output="screen" />
+
+    <!-- 5. 假定位节点 -->
     <node name="sim_localizer" pkg="agv_sim_gazebo" type="sim_localizer.py" output="screen" />
 
-    <!-- 5. 启动你的原版导航控制 -->
+    <!-- 6. 避障算法节点 -->
+    <include file="$(find safety_protection)/launch/ready.launch" />
+
+    <!-- 7. 避障信号桥接节点 (只允许出现一次) -->
+    <node name="obs_bridge" pkg="agv_sim_gazebo" type="obs_to_datain_bridge.py" output="screen" />
+
+    <!-- 8. 导航控制器 -->
     <include file="$(find robot_navigation)/launch/robot_Ctrl.launch" />
 
-    <!-- 6. 桥梁 -->
-    <node pkg="agv_sim_gazebo" type="nav_to_gazebo.py" name="nav_to_gazebo" output="screen" />
-
-    <!-- 7. 假反馈信号 -->
+    <!-- 9. 底盘控制桥接 -->
+    <node name="nav_to_gazebo" pkg="agv_sim_gazebo" type="nav_to_gazebo.py" output="screen" />
+    
+    <!-- 10. 假电池信号 -->
     <node pkg="rostopic" type="rostopic" name="fake_battery" args="pub /Battery std_msgs/UInt8 '{data: 85}' -r 1" />
-    <node pkg="rostopic" type="rostopic" name="fake_io" args="pub /DataIN std_msgs/UInt16 '{data: 4}' -r 10" /> 
 </launch>

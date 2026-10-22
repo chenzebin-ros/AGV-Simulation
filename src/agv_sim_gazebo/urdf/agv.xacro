@@ -89,16 +89,25 @@
   </joint>
 
   <!-- 激光雷达 -->
-  <link name="lidar_link">
-    <visual>
-      <geometry><cylinder radius="0.05" length="0.1"/></geometry>
-      <material name="yellow"/>
-    </visual>
+    <!-- ==================== 双雷达模型 ==================== -->
+  <!-- 左雷达 -->
+  <link name="lidar_left">
+    <visual><geometry><cylinder radius="0.05" length="0.1"/></geometry><material name="yellow"/></visual>
     <inertial><mass value="0.5"/><inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/></inertial>
   </link>
-  <joint name="lidar_joint" type="fixed">
-    <parent link="base_link"/><child link="lidar_link"/>
-    <origin xyz="0 0 ${base_height/2 + 0.1}" rpy="0 0 0"/>
+  <joint name="lidar_left_joint" type="fixed">
+    <parent link="base_link"/><child link="lidar_left"/>
+    <origin xyz="0.5 0 0.5" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 右雷达 -->
+  <link name="lidar_right">
+    <visual><geometry><cylinder radius="0.05" length="0.1"/></geometry><material name="yellow"/></visual>
+    <inertial><mass value="0.5"/><inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/></inertial>
+  </link>
+  <joint name="lidar_right_joint" type="fixed">
+    <parent link="base_link"/><child link="lidar_right"/>
+    <origin xyz="-0.5 0 0.5" rpy="0 0 0"/>
   </joint>
 
   <!-- ==================== Gazebo 专属配置区 ==================== -->
@@ -140,29 +149,34 @@
 
   <!-- 激光雷达插件 -->
   <!-- 绝对稳妥的官方 2D 雷达插件 -->
-  <gazebo reference="lidar_link">
-    <sensor type="ray" name="lidar">
-      <pose>0 0 0 0 0 0</pose>
-      <visualize>true</visualize>
+    <!-- 左侧雷达插件，输出到 /scan_left -->
+  <gazebo reference="lidar_left">
+    <sensor type="ray" name="lidar_sensor_left">
+      <visualize>false</visualize>
       <update_rate>10</update_rate>
       <ray>
-        <scan>
-          <horizontal>
-            <samples>360</samples>
-            <resolution>1</resolution>
-            <min_angle>-3.14159</min_angle>
-            <max_angle>3.14159</max_angle>
-          </horizontal>
-        </scan>
-        <range>
-          <min>0.3</min>
-          <max>30.0</max>
-        </range>
+        <scan><horizontal><samples>360</samples><min_angle>-3.14159</min_angle><max_angle>3.14159</max_angle></horizontal></scan>
+        <range><min>0.3</min><max>30.0</max></range>
       </ray>
-      <!-- 使用最基础的激光插件，直接输出 /scan -->
-      <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
-        <topicName>/scan</topicName>
-        <frameName>lidar_link</frameName>
+      <plugin name="gazebo_ros_laser_left" filename="libgazebo_ros_laser.so">
+        <topicName>/scan_left</topicName>
+        <frameName>lidar_left</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- 右侧雷达插件，输出到 /scan_right -->
+  <gazebo reference="lidar_right">
+    <sensor type="ray" name="lidar_sensor_right">
+      <visualize>false</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan><horizontal><samples>360</samples><min_angle>-3.14159</min_angle><max_angle>3.14159</max_angle></horizontal></scan>
+        <range><min>0.3</min><max>30.0</max></range>
+      </ray>
+      <plugin name="gazebo_ros_laser_right" filename="libgazebo_ros_laser.so">
+        <topicName>/scan_right</topicName>
+        <frameName>lidar_right</frameName>
       </plugin>
     </sensor>
   </gazebo>
