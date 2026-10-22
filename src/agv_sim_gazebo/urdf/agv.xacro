@@ -139,19 +139,31 @@
   </gazebo>
 
   <!-- 激光雷达插件 -->
+  <!-- 绝对稳妥的官方 2D 雷达插件 -->
   <gazebo reference="lidar_link">
     <sensor type="ray" name="lidar">
-      <visualize>false</visualize>
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
       <update_rate>10</update_rate>
       <ray>
-        <scan><horizontal><samples>720</samples><min_angle>-3.14159</min_angle><max_angle>3.14159</max_angle></horizontal></scan>
-        <range><min>0.3</min><max>30.0</max></range>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159</min_angle>
+            <max_angle>3.14159</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.3</min>
+          <max>30.0</max>
+        </range>
       </ray>
+      <!-- 使用最基础的激光插件，直接输出 /scan -->
       <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
-        <topicName>/points_raw</topicName>
+        <topicName>/scan</topicName>
         <frameName>lidar_link</frameName>
       </plugin>
     </sensor>
   </gazebo>
-
 </robot>

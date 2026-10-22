@@ -451,6 +451,7 @@ static void map_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
     // Convert the data type(from sensor_msgs to pcl).2. ROS 消息转 PCL 点云
     pcl::fromROSMsg(*input, map);
+
     // 3. 如果需要局部坐标变换
     if (_use_local_transform == true)
     {

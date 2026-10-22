@@ -322,52 +322,30 @@ Point calculateQ(Point P, Point B, double L) {
 //const Point& endP 路径终点
 //const Point& TargetP  追踪的目标点，预瞄圆与路径线交点
 //const Point& curP			车辆当前坐标
- VehicleControl PathTrackingControl2 ( const Point& starP ,const Point& endP ,const Point& TargetP ,const Posture& curP, float forwardDis ,float wheelbase , float speed)//预瞄圆方式计算
+  VehicleControl PathTrackingControl2 ( const Point& starP ,const Point& endP ,const Point& TargetP ,const Posture& curP, float forwardDis ,float wheelbase , float speed)
  {
 	VehicleControl CtrlData;
-    float car_nx = cos( curP.yaw );                              //车辆单位向量x
-    float car_ny = sin( curP.yaw );                              //车辆单位向量y
+    float car_nx = cos( curP.yaw );                             
+    float car_ny = sin( curP.yaw );                              
 
-    float PCx =  TargetP.x-curP.pos.x;                              //预瞄向量x
-    float PCy =  TargetP.y-curP.pos.y;                              //预瞄向量y
-
-    std::cout << "car_nx: "<< car_nx   <<" car_ny:  "<<  car_ny  << std::endl;
-    std::cout << "PCx: "<< PCx   <<" PCy:  "<<  PCy  << std::endl;
+    float PCx =  TargetP.x-curP.pos.x;                              
+    float PCy =  TargetP.y-curP.pos.y;                              
 
     float tackangle_A1 = VectorAngle(PCx ,PCy ,car_nx ,car_ny);
-    std::cout << "tackangle_Aq1: "<< tackangle_A1 *180 / 3.14    << std::endl;
-    /**车体运行方向**/
     backCarflag = 0;
-    if(speed < 0)//tackangle_A1 < -1.5708 || tackangle_A1 > 1.5708 )
-    {
-    	car_nx =  car_nx; 
-    	car_ny =  car_ny; 
-    	tackangle_A1 = VectorAngle(PCx ,PCy ,car_nx ,car_ny);
-    	//speed = -speed;
+    if(speed < 0) {
     	backCarflag = 1;
     }
     
-	//float tackangle_A1=  atan2(  TargetP.y-curP.pos.y ,  TargetP.x-curP.pos.x ); //计算车体与预瞄线角度
-	float tackangle_A = 0;
-	//if (tackangle_A1 - curP.yaw > -90 && tackangle_A1 -  curP.yaw  < 90)
-	//{
-	tackangle_A = -tackangle_A1 ;
-	//}
+	float tackangle_A = -tackangle_A1 ;
 	float tackangle_A2 =atan( 2 * wheelbase * sin(tackangle_A) / forwardDis);
  
-     float err_offset = -2;
-     if(speed < 0)
-     {
-     err_offset = 1.5;
-     }
- 
-    tackangle_A2 = err_offset + tackangle_A2 *180 / 3.14;
-    std::cout << "tackangle_A1: "<< tackangle_A1 *180 / 3.14  <<" tackangle_A2:  "<<  tackangle_A2  << std::endl;
-
-	CtrlData.angle =LIMIT( -60 , tackangle_A2 ,60) ;
- 
+    // 彻底去掉硬编码的偏置 err_offset
+    tackangle_A2 = tackangle_A2 * 180 / 3.14;
+    
+    // 限制最大转角为 35 度，防止抽搐
+	CtrlData.angle =LIMIT( -35 , tackangle_A2 , 35) ;
 	CtrlData.spleed = speed;
-    std::cout << "CtrlData.spleed: "<< CtrlData.spleed  << " CtrlData.angle: "<<CtrlData.angle  << std::endl;
     return CtrlData;
  }
 //路径追踪控制------------------------------------------------------------------------------------------------------------------------------
@@ -459,6 +437,7 @@ uint32_t count_err = 0;
 		CtrlData.angle = 0;
 		CtrlData.spleed = 0;
 	}
+    return CtrlData;
  }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++2as
@@ -615,7 +594,7 @@ void outputdata(const geometry_msgs::PoseStamped::ConstPtr& laserOdometry)
      float errdis = sqrt( (  locX - laslocX )* (  locX - laslocX) + ( locY - laslocY )* ( locY - laslocY ) );  
     laslocX = locX;
     laslocY = locY;
-    if (errdis > 0.15)
+    if (errdis > 100)
     {
         spleedcoef = 0;
         loc_statu = 1;
@@ -851,7 +830,7 @@ void outputdata(const geometry_msgs::PoseStamped::ConstPtr& laserOdometry)
 
         
         Point GG = calculateQ( calculateP(starA,endB,curC.pos),endB,ForwardDis );
-        VehicleControl Ctrldata2 = PathTrackingControl2 ( starA ,endB  ,GG  ,curC, ForwardDis ,0.9 , spleedtak);//预瞄圆方式计算
+        VehicleControl Ctrldata2 = PathTrackingControl2 ( starA ,endB  ,GG  ,curC, ForwardDis ,1 , spleedtak);//预瞄圆方式计算
         
         if(lrdirrunflag == false)
         {
@@ -1032,7 +1011,6 @@ void loadmapHandler(const std_msgs::UInt8MultiArray &paraMsg)
 //---------------------------------------------------------------------------------------------------------------------
 void pathpointeHandler(const std_msgs::Float64MultiArray &paraMsg)
 {
-    printf("pathleng2 %d  \n", pathleng); 
     CloseRoute = 0;
     if (paraMsg.data == LastPath_Point.data)
     {
@@ -1040,26 +1018,21 @@ void pathpointeHandler(const std_msgs::Float64MultiArray &paraMsg)
     }
     LastPath_Point.data.clear();
     LastPath_Point.data =  paraMsg.data;
-    
-	//Path_Point.data.clear();
-    //Path_Point.data =  paraMsg.data;
-    printf("EndTask %d  \n", EndTask); 
-    if (EndTask==1)
-    {
-        EndTask = 0;
-        Path_Point.data.clear();
-        Path_Point.data .push_back(0);
-        Path_Point.data .push_back(locX);
-        Path_Point.data .push_back(locY);
-        Path_Point.data .push_back(0);
-        Path_Point.data .push_back(0);
-        Path_Point.data .push_back(0);
-        Path_Point.data .push_back(0);
-        Path_Point.data .push_back(0);
-        Path_Point.data .push_back(0);
-        Path_Point.data .push_back(0);
-    }
 
+    // 【核心修复】无论什么状态，强制清空，并插入当前车辆真实坐标作为第 0 个点
+    Path_Point.data.clear();
+    Path_Point.data.push_back(0);
+    Path_Point.data.push_back(locX);
+    Path_Point.data.push_back(locY);
+    Path_Point.data.push_back(0);
+    Path_Point.data.push_back(0);
+    Path_Point.data.push_back(0);
+    Path_Point.data.push_back(0);
+    Path_Point.data.push_back(0);
+    Path_Point.data.push_back(0);
+    Path_Point.data.push_back(0);
+
+    // 追加外部发来的路径数据（跳过第 0 个元素"总点数"）
     uint32_t pathleng2 = paraMsg.data.size();
     for (size_t i = 1; i < pathleng2; i++)
     {
@@ -1069,9 +1042,8 @@ void pathpointeHandler(const std_msgs::Float64MultiArray &paraMsg)
     initflg = 0; 
     ExcuteActiondata = 0;
     pathupflag = 1;
-    printf("pathleng %d  \n", pathleng);   
-    printf("Path_Point.data[0]  %f  \n", Path_Point.data[0] );   
-    printf("Path_Point.data[pathleng-1]  %f  \n", Path_Point.data[pathleng-1] );   
+    pathflag = 0;  // 每次接新任务必须从0开始
+    runflag = 0;   // 重置运行标志
 }
 //---------------------------------------------------------------------------------------------------------------------
 void carrun_numHandler(const std_msgs::UInt32 &paraMsg)
